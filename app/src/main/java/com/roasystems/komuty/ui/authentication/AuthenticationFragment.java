@@ -7,6 +7,10 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+
+import com.google.gson.Gson;
 import com.roasystems.komuty.model.AuthRequest;
 import com.roasystems.komuty.model.AuthResponse;
 import com.roasystems.komuty.network.ApiService;
@@ -24,6 +28,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.roasystems.komuty.R;
+import com.roasystems.komuty.utility.SessionManager;
 
 public class AuthenticationFragment extends Fragment {
     private EditText userNameEditText, passwordEditText;
@@ -67,6 +72,13 @@ public class AuthenticationFragment extends Fragment {
         ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
         Call<AuthResponse> call = apiService.authenticate(3, authRequest);  // Dynamic applicationId
 
+        // Extract and display the URL
+        String url = call.request().url().toString();
+        String jsonBody = new Gson().toJson(authRequest);
+        Toast.makeText(getActivity(), "URL: " + url + "\nBody: " + jsonBody, Toast.LENGTH_LONG).show();
+
+
+
         call.enqueue(new Callback<AuthResponse>() {
             @Override
             public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
@@ -75,6 +87,13 @@ public class AuthenticationFragment extends Fragment {
                     AuthResponse authResponse = response.body();
                     String token = authResponse.getToken();
                     Toast.makeText(getActivity(), "Login Successful! Token: " + token, Toast.LENGTH_SHORT).show();
+                    // Save session and navigate to home
+                    SessionManager sessionManager = new SessionManager(getActivity());
+                    sessionManager.createLoginSession(token);
+
+                    // Navigate to home fragment
+                    NavController navController = Navigation.findNavController(getActivity(), R.id.fragment_Container);
+                    navController.navigate(R.id.action_authenticationFragment_to_homeFragment);
 
                     // You can save the token for later use or proceed with your app's flow
                 } else {

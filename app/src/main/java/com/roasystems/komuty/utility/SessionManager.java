@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 public class SessionManager {
     private static final String PREF_NAME = "user_session"; // SharedPreferences file name
     private static final String KEY_IS_LOGGED_IN = "is_logged_in"; // Key to store login status
+    private static final String KEY_TOKEN = "token"; // Key to store token
 
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
@@ -22,5 +23,16 @@ public class SessionManager {
     // Get login status
     public boolean isLoggedIn() {
         return sharedPreferences.getBoolean(KEY_IS_LOGGED_IN, false); // Return login status; false by default
+    }
+    // Clear session details
+    public void logout() {
+        editor.clear(); // Clear all data from SharedPreferences
+        editor.apply(); // Commit changes asynchronously
+    }
+
+    public void createLoginSession(String token) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(KEY_TOKEN, token);
+        editor.apply();
     }
 }
